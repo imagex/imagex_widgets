@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Widget: Basic Text and Markup feature.
+ */
+
+include_once 'imagex_widgets_basic.features.inc';
