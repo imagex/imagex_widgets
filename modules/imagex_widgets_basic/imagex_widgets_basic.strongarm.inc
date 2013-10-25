@@ -15,7 +15,17 @@ function imagex_widgets_basic_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_bean__imagex_widget_basic';
   $strongarm->value = array(
-    'view_modes' => array(),
+    'view_modes' => array(
+      'default' => array(
+        'custom_settings' => TRUE,
+      ),
+      'diff_standard' => array(
+        'custom_settings' => FALSE,
+      ),
+      'token' => array(
+        'custom_settings' => FALSE,
+      ),
+    ),
     'extra_fields' => array(
       'form' => array(
         'label' => array(
@@ -34,7 +44,14 @@ function imagex_widgets_basic_strongarm() {
           'weight' => '9',
         ),
       ),
-      'display' => array(),
+      'display' => array(
+        'title' => array(
+          'default' => array(
+            'weight' => '-9',
+            'visible' => TRUE,
+          ),
+        ),
+      ),
     ),
   );
   $export['field_bundle_settings_bean__imagex_widget_basic'] = $strongarm;
