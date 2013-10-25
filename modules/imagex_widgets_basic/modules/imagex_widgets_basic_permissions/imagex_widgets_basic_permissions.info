@@ -1,0 +1,14 @@
+name = Widget: Basic Text and Markup Permissions
+core = 7.x
+package = ImageX Widgets
+version = 7.x-1.0
+project = imagex_widgets_basic_permissions
+dependencies[] = bean
+dependencies[] = features
+dependencies[] = imagex_widgets_basic
+dependencies[] = imagex_user_roles
+features[features_api][] = api:2
+features[user_permission][] = create any imagex_widget_basic bean
+features[user_permission][] = delete any imagex_widget_basic bean
+features[user_permission][] = edit any imagex_widget_basic bean
+features[user_permission][] = view any imagex_widget_basic bean
