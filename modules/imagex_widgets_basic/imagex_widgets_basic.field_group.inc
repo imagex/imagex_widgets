@@ -76,11 +76,11 @@ function imagex_widgets_basic_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Settings',
-    'weight' => '8',
+    'weight' => '4',
     'children' => array(
       0 => 'redirect',
-      1 => 'group_widget_settings_viewmode',
-      2 => 'group_widget_settings_revisions',
+      1 => 'group_widget_settings_revisions',
+      2 => 'group_widget_settings_viewmode',
     ),
     'format_type' => 'tabs',
     'format_settings' => array(
