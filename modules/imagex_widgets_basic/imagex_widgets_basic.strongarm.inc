@@ -47,7 +47,7 @@ function imagex_widgets_basic_strongarm() {
       'display' => array(
         'title' => array(
           'default' => array(
-            'weight' => '-9',
+            'weight' => '0',
             'visible' => TRUE,
           ),
         ),
