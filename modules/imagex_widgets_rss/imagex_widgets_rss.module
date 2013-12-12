@@ -1,0 +1,170 @@
+<?php
+/**
+ * @file
+ * Code for the Widget: RSS Feed feature.
+ */
+
+include_once 'imagex_widgets_rss.features.inc';
+
+/**
+ * Implementation of hook_ctools_plugin_directory().
+ */
+function imagex_widgets_rss_ctools_plugin_directory($module, $plugin) {
+	if ($module == 'ctools' && $plugin == 'content_types') {
+		//return 'plugins/' . $plugin;
+	}
+}
+
+/**
+ * Implements hook_bean_types_api_info().
+ */
+function imagex_widgets_rss_bean_types_api_info() {
+	return array('api' => 5);
+}
+
+/**
+ * Implements hook_bean_types().
+ */
+function imagex_widgets_rss_bean_types() {
+	$plugins = array();
+	$plugin_path = drupal_get_path('module', 'imagex_widgets_rss') . '/plugins/bean';
+
+	$plugins['imagex_widget_rss'] = array(
+			'label' => t('RSS Feed Widget'),
+			'handler' => array(
+					'class' => 'RssWidgetBean',
+					'parent' => 'bean',
+					'path' => $plugin_path,
+					'file' => 'RssWidgetBean.inc',
+			),
+  	'description' => 'Allows content authors to create a block of RSS feed items from any RSS website address with options for the number of items to display and how often the feed should refresh.'
+	);
+	return $plugins;
+}
+
+/**
+ * Implements hook_preprocess_hook().
+ *
+ * Add css, classes, and template suggestions for rss_feed bean.
+ */
+function imagex_widgets_rss_preprocess_block(&$variables) {
+	// For bean blocks.
+	if ($variables['block']->module == 'bean') {
+		// Get the bean elements.
+		$beans = $variables['elements']['bean'];
+		// There is only 1 bean per block.
+		$children = element_children($beans);
+		$bean = $beans[reset($children)];
+
+		if ($bean['#bundle'] == 'imagex_widget_rss') {
+			// Add bean type classes to the block.
+			$variables['classes_array'][] = drupal_html_class('block-bean-' . $bean['#bundle']);
+			// Add template suggestions for bean types.
+			$variables['theme_hook_suggestions'][] = 'block__bean__' . $bean['#bundle'];
+
+			$url = $bean['#entity']->field_widget_feed_link['und'][0]['url'];
+			$options['item_count'] = $bean['#entity']->field_widget_item_count['und'][0]['value'];
+			$options['cache_lifetime'] = $bean['#entity']->field_cache_lifetime['und'][0]['value'];
+
+			$variables['feeds'] = imagex_widgets_rss_get_rss_feed($url, $options);
+		}
+	}
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Add imagex_widget_rss _block template.
+ */
+function imagex_widgets_rss_theme() {
+	return array(
+			'block__bean__imagex_widget_rss' => array(
+					'template' => 'block__bean__imagex_widget_rss',
+					'path' => drupal_get_path('module', 'imagex_widgets_rss') . '/templates',
+			),
+			'imagex_widget_rss' => array(
+					'template' => 'block__bean__imagex_widget_rss',
+					'path' => drupal_get_path('module', 'imagex_widgets_rss') . '/templates',
+			),
+
+	);
+}
+
+/**
+ * Given an RSS url, and an associative array of options, this function will
+ * return a rendered RSS feed. Options:
+ *    item_count => how many items to return (defaults to 4)
+ *    characters => how many characters to render in an item
+ *      0 = unlimited
+ *      150 = default
+ */
+
+function imagex_widgets_rss_get_rss_feed($feed_url, $options = array()) {
+	// Create a hash to get/set cache
+	$clean_url = urlencode($feed_url);
+	$hash = hash('md5', $clean_url);
+	$now = time();
+
+	// Setup default options.
+	if (!isset($options['item_count'])) {
+		$options['item_count'] = 4;
+	}
+	if (!isset($options['characters'])) {
+		$options['characters'] = 150;
+	}
+
+	$expire = CACHE_TEMPORARY;
+
+	if (isset($options['cache_lifetime'])) {
+		$expire = $now + ($options['cache_lifetime'] * 60);
+	}
+
+	// Use cache
+	$cache = cache_get('imagex_widgets_rss:' . $hash);
+
+	// Load from cache if cache value exists and hasn't expired.
+	if ($cache && ($cache->expire > $now || $cache->expire == 0)) {
+		$xmlCache = $cache->data;
+		$xml = simplexml_load_string($xmlCache);
+
+		// Use the previous expiration
+		$expire = $cache->expire;
+	}
+	else {
+		// Initiate curl.
+		$curl = curl_init();
+
+		// Setup curl.
+		curl_setopt($curl, CURLOPT_URL,"$feed_url");
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 0);
+
+		// Grab the xml.
+		$xml_file = curl_exec($curl);
+
+		// Close curl.
+		curl_close($curl);
+
+		// Get the xml string.
+		$xml = simplexml_load_string($xml_file);
+		$xmlCache = (string)$xml_file;
+
+		cache_set('imagex_widgets_rss:' . $hash, $xmlCache, 'cache', $expire);
+	}
+
+	$items = array();
+
+	// For each rss item.
+	foreach ($xml->channel->item as $item) {
+
+		// Removed as these descriptions should display exactly how they were intended
+		// $description = strip_tags($item->description);
+		// if ($options['characters'] != 0) { $item->description = substr($description, 0, $options['characters']) . '...'; }
+		if ($options['item_count'] > 0) {
+			$items[] = $item;
+		}
+		$options['item_count']--;
+	}
+
+	return $items;
+}
