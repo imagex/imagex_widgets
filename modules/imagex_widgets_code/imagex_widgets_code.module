@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the ImageX Code Block feature.
+ */
+
+include_once 'imagex_widgets_code.features.inc';
