@@ -12,6 +12,13 @@ class RssWidgetBean extends BeanPlugin {
 
   	$vars['feeds'] = imagex_widgets_rss_get_rss_feed($url, $options);
 
+    $vars['show_description'] = $bean->field_show_description['und'][0]['value'];
+
+    if(isset($bean->field_image['und'][0]['uri'])){
+      $vars['feed_image'] = $bean->field_image['und'][0]['uri'];
+      $vars['feed_image_alt'] = $bean->field_image['und'][0]['field_file_image_alt_text']['und'][0]['value'];
+    }
+
   	unset($content['bean']);
 
   	$content['bean']['#markup'] = theme('imagex_widget_rss', $vars);

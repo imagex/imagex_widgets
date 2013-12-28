@@ -25,15 +25,20 @@
  * @see template_preprocess()
  * @see template_preprocess_entity()
  * @see template_process()
- */
+ */ 
 ?>
 <div class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
   <div class="content item-list"<?php print $content_attributes; ?>>
+    <?php if (!empty($feed_image)){ ?>
+    <img class="imagex_widgets_rss_image" src="<?php echo file_create_url($feed_image); ?>" alt="<?php echo (!empty($feed_image_alt) ? $feed_image_alt : 'feed image'); ?>">
+    <?php } ?>
     <ul>
       <?php foreach($feeds as $item) : ?>
       <li>
         <h4 class="feed-title"><a href="<?php print $item->link; ?>"><?php print $item->title; ?></a></h4>
-        <div class="feed-desc"><?php print $item->description; ?></div>
+        <? if(!$show_description){ ?>
+          <div class="feed-desc"><?php print $item->description; ?></div>
+        <? } ?>
       </li>
       <?php endforeach; ?>
     </ul>

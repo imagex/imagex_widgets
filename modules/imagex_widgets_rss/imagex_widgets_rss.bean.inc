@@ -19,5 +19,7 @@ function imagex_widgets_rss_bean_admin_ui_types() {
   $bean_type->description = '';
   $export['imagex_widget_rss'] = $bean_type;
 
+  features_alter_code('bean_type', $export);
+
   return $export;
 }
